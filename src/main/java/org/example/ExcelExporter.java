@@ -1,6 +1,9 @@
 package org.example;
 
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -27,8 +30,20 @@ public class ExcelExporter {
             if (table != null) {
                 for (Artist artist : artists) {
                     int startColIndex = table.getStartColIndex();
+                    int startRowIndex = table.getStartRowIndex();
+
+                    XSSFRow row = sheet.getRow(startRowIndex);
+
+                    XSSFCellStyle cellStyle1 = sheet.getRow(startRowIndex).getCell(startColIndex).getCellStyle();
+                    XSSFCellStyle cellStyle2 = sheet.getRow(startRowIndex).getCell(startColIndex+1).getCellStyle();
+                    XSSFCellStyle cellStyle3 = sheet.getRow(startRowIndex).getCell(startColIndex+2).getCellStyle();
+
                     Row dataRow = sheet.createRow(sheet.getLastRowNum() + 1);
-                    dataRow.createCell(startColIndex++).setCellValue(artist.getId());
+                    Cell cell1 = dataRow.createCell(startColIndex++);
+                    cell1.setCellValue(artist.getId());
+                    cell1.setCellStyle(cellStyle1);
+
+
                     dataRow.createCell(startColIndex++).setCellValue(artist.getArtistName());
                     dataRow.createCell(startColIndex).setCellValue(artist.getDateOfBirth());
                 }
