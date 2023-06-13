@@ -1,5 +1,6 @@
 package org.example;
 
+import com.nhl.dflib.DataFrame;
 import org.example.model.Artist;
 
 import java.util.ArrayList;
@@ -25,8 +26,10 @@ public class Main {
 //
 //        }
 
+
         excelExporter.export("WriteTestBook.xlsx", "Artist", "Artist", createArtistList());
-       // excelExporter.export("WriteTestBook.xlsx", "20th century artists", "Artist20", create20ThCenturyArtistList());
+      //  excelExporter.export("WriteTestBook.xlsx",  "Artist", createArtists());
+        // excelExporter.export("WriteTestBook.xlsx", "20th century artists", "Artist20", create20ThCenturyArtistList());
     }
 
     private static List<Artist> createArtistList() {
@@ -39,5 +42,16 @@ public class Main {
         Artist dali = new Artist(3, "Salvador Dali", "11 May 1904");
         Artist warhol = new Artist(4, "Andy Warhol", "6 August 1928");
         return new ArrayList<>(Arrays.asList(dali, warhol));
+    }
+
+    private static DataFrame createArtists() {
+        return DataFrame
+                .byArrayRow("ID", "ARTIST_NAME", "YEAR_OF_BIRTH")
+                .appender()
+                .append(1, "Pablo Picasso", 1881)
+                .append(2, "Marc Chagall", 1887)
+                .append(3, "Salvador Dali", 1904)
+                .append(4, "Andy Warhol", 1928)
+                .toDataFrame();
     }
 }

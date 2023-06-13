@@ -14,8 +14,20 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
-    <dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.nhl.dflib</groupId>
+                <artifactId>dflib-bom</artifactId>
+                <version>0.17</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
+
+    <dependencies>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
@@ -34,7 +46,10 @@
             <version>2.20.0</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>com.nhl.dflib</groupId>
+            <artifactId>dflib</artifactId>
+        </dependency>
 
     </dependencies>
 
