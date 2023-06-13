@@ -1,6 +1,7 @@
 package org.example;
 
 import com.nhl.dflib.DataFrame;
+import com.nhl.dflib.Index;
 import org.example.model.Artist;
 
 import java.util.ArrayList;
@@ -27,8 +28,8 @@ public class Main {
 //        }
 
 
-        excelExporter.export("WriteTestBook.xlsx", "Artist", "Artist", createArtistList());
-      //  excelExporter.export("WriteTestBook.xlsx",  "Artist", createArtists());
+//        excelExporter.export("WriteTestBook.xlsx", "Artist", "Artist", createArtistList());
+        excelExporter.export("WriteTestBook.xlsx",  "Artist", createArtists());
         // excelExporter.export("WriteTestBook.xlsx", "20th century artists", "Artist20", create20ThCenturyArtistList());
     }
 
