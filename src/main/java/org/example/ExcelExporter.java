@@ -3,6 +3,7 @@ package org.example;
 import com.nhl.dflib.DataFrame;
 import com.nhl.dflib.Index;
 import com.nhl.dflib.Printers;
+import com.nhl.dflib.Series;
 import com.nhl.dflib.row.CrossColumnRowProxy;
 import com.nhl.dflib.row.RowProxy;
 import org.apache.poi.ss.formula.FormulaParser;
@@ -17,12 +18,14 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFEvaluationWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
+import org.apache.poi.xssf.usermodel.XSSFTableColumn;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.example.model.Artist;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class ExcelExporter {
@@ -115,26 +118,36 @@ public class ExcelExporter {
                 dataFrame.iterator().forEachRemaining(rowProxies::add);
 
 
-                Index columnsIndex1 = dataFrame.getColumnsIndex();
 
 //                String table1 = Printers.tabular.toString(dataFrame);
 //                System.out.println(table1);
+                Iterator<RowProxy> iterator = dataFrame.iterator();
 
-                //   while (artists.iterator().hasNext()) {
+//                while (dataFrame.iterator().hasNext()) {
+//                    RowProxy next = iterator.next();
+//
+//
+//                }
+                List<XSSFTableColumn> columns = table.getColumns();
+//
+//                    String name = column.getName();
+//                    System.out.println(name);
+//                }
 
-                for (RowProxy rowProxy : rowProxies) {
 
 
                     Row dataRow = sheet.createRow(sheet.getLastRowNum() + 1);
+                    for (int i = 0; i < rowProxies.size(); i++) {
+                        for (XSSFTableColumn tableColumn : columns) {
+//                            Object o = rowProxy.get(label);
+//                            int columnIndex = table.findColumnIndex(label);
+                            Series<Object> column = dataFrame.getColumn(i);
 
-                    for (String label : labels) {
-                        Object o = rowProxy.get(label);
-                        int columnIndex = table.findColumnIndex(label);
-                        Cell cell = dataRow.createCell(table.getStartColIndex() + columnIndex);
-                        cell.setCellValue(o.toString());
+                            Cell cell = dataRow.createCell(table.getStartColIndex() + tableColumn.getColumnIndex());
+                            cell.setCellValue(column.get(1).toString());
 
-                        String ss = "s";
-                    }
+                            String ss = "s";
+                        }
                 }
 
                 //   }
