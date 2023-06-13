@@ -1,10 +1,7 @@
 package org.example;
 
 import com.nhl.dflib.DataFrame;
-import com.nhl.dflib.Index;
-import com.nhl.dflib.Printers;
 import com.nhl.dflib.Series;
-import com.nhl.dflib.row.CrossColumnRowProxy;
 import com.nhl.dflib.row.RowProxy;
 import org.apache.poi.ss.formula.FormulaParser;
 import org.apache.poi.ss.formula.FormulaRenderer;
@@ -13,14 +10,15 @@ import org.apache.poi.ss.formula.ptg.AreaPtgBase;
 import org.apache.poi.ss.formula.ptg.Ptg;
 import org.apache.poi.ss.formula.ptg.RefPtgBase;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFEvaluationWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFTableColumn;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.model.Artist;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -103,15 +101,11 @@ public class ExcelExporter {
                     .orElse(null);
 
             if (table != null) {
-
-
-//                int startColIndex = table.getStartColIndex();
-//                int startRowIndex = table.getStartRowIndex();
+                int startColIndex = table.getStartColIndex();
+                int startRowIndex = table.getStartRowIndex();
 //
 //                int currentColIndex = startColIndex;
 //                int currentRowIndex = startRowIndex;
-
-
 
 
                 List<RowProxy> rowProxies = new ArrayList<>();
@@ -128,6 +122,7 @@ public class ExcelExporter {
 //
 //                }
                 List<XSSFTableColumn> columns = table.getColumns();
+                table.setDataRowCount(rowProxies.size());
 
 
                 List<String> frameColumnsNames = Arrays.asList(dataFrame.getColumnsIndex().getLabels());
@@ -135,15 +130,23 @@ public class ExcelExporter {
                 for (int i = 0; i < rowProxies.size(); i++) {
                     Row dataRow = sheet.createRow(sheet.getLastRowNum() + 1);
                     for (XSSFTableColumn tableColumn : columns) {
-                        if (frameColumnsNames.contains(tableColumn.getName())){
+                        Cell cell = dataRow.createCell(table.getStartColIndex() + tableColumn.getColumnIndex());
+                        if (frameColumnsNames.contains(tableColumn.getName())) {
                             Series<Object> frameColumn = dataFrame.getColumn(tableColumn.getName());
-                            Cell cell = dataRow.createCell(table.getStartColIndex() + tableColumn.getColumnIndex());
                             cell.setCellValue(frameColumn.get(i).toString());
-                        }else{
-                            //TODO action in case the is no column in dataFrame
+                        } else {
+                            XSSFCell formulaCandidateCell = sheet.getRow(startRowIndex + 1).getCell(startColIndex+tableColumn.getColumnIndex());
+                            if(formulaCandidateCell.getCellType().equals(CellType.FORMULA)){
+                               cell.setCellFormula(formulaCandidateCell.getCellFormula());
+
+                            } else {
+                                cell.setCellValue("Default");
+                            }
                         }
+                        cell.setCellStyle(getCellStyleFromTemplate(sheet,startColIndex+tableColumn.getColumnIndex(),startRowIndex));
                     }
                 }
+
 
                 //   }
 
@@ -183,7 +186,7 @@ public class ExcelExporter {
     }
 
 
-    private XSSFCellStyle getCellStyle(XSSFSheet sheet, int startColIndex, int startRowIndex) {
+    private XSSFCellStyle getCellStyleFromTemplate(XSSFSheet sheet, int startColIndex, int startRowIndex) {
         return sheet.getRow(startRowIndex + 1).getCell(startColIndex).getCellStyle();
     }
 
