@@ -25,67 +25,68 @@ import org.example.model.Artist;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
 public class ExcelExporter {
-
-    public void export(String filePath, String sheetName, String tableName, List<Artist> artists) {
-
-        try (FileInputStream inputStream = new FileInputStream(filePath);) {
-            XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
-            XSSFSheet sheet = workbook.getSheet(sheetName);
-
-            XSSFTable table = sheet.getTables()
-                    .stream()
-                    .filter(t -> t.getName().equals(tableName))
-                    .findFirst()
-                    .orElse(null);
-
-            if (table != null) {
-
-
-                int startColIndex = table.getStartColIndex();
-                int startRowIndex = table.getStartRowIndex();
-
-                int currentColIndex = startColIndex;
-                int currentRowIndex = startRowIndex;
-
-                for (Artist artist : artists) {
-
-                    String formula = sheet.getRow(startRowIndex + 1).getCell(startColIndex + 3).getCellFormula();
-
-                    Row dataRow = sheet.createRow(sheet.getLastRowNum());
-
-                    Cell cell1 = dataRow.createCell(startColIndex);
-                    cell1.setCellValue(artist.getId());
-                    cell1.setCellStyle(getCellStyle(sheet, startColIndex++, startRowIndex));
-
-                    Cell cell2 = dataRow.createCell(startColIndex);
-                    cell2.setCellValue(artist.getArtistName());
-                    cell2.setCellStyle(getCellStyle(sheet, startColIndex++, startRowIndex));
-
-                    Cell cell3 = dataRow.createCell(startColIndex);
-                    cell3.setCellValue(artist.getDateOfBirth());
-                    cell3.setCellStyle(getCellStyle(sheet, startColIndex++, startRowIndex));
-
-                    Cell cell4 = dataRow.createCell(startColIndex);
-                    //  String newFormula = copyFormula(sheet, formula, 0, i+1);
-                    cell4.setCellValue(formula);
-                    cell4.setCellStyle(getCellStyle(sheet, startColIndex, startRowIndex));
-                }
-            }
-
-            try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
-                workbook.write(outputStream);
-            }
-            System.out.println("Data exported");
-
-        } catch (Exception e) {
-            System.out.println("Error exporting data: " + e.getMessage());
-        }
-
-    }
+//
+//    public void export(String filePath, String sheetName, String tableName, List<Artist> artists) {
+//
+//        try (FileInputStream inputStream = new FileInputStream(filePath);) {
+//            XSSFWorkbook workbook = new XSSFWorkbook(inputStream);
+//            XSSFSheet sheet = workbook.getSheet(sheetName);
+//
+//            XSSFTable table = sheet.getTables()
+//                    .stream()
+//                    .filter(t -> t.getName().equals(tableName))
+//                    .findFirst()
+//                    .orElse(null);
+//
+//            if (table != null) {
+//
+//
+//                int startColIndex = table.getStartColIndex();
+//                int startRowIndex = table.getStartRowIndex();
+//
+//                int currentColIndex = startColIndex;
+//                int currentRowIndex = startRowIndex;
+//
+//                for (Artist artist : artists) {
+//
+//                    String formula = sheet.getRow(startRowIndex + 1).getCell(startColIndex + 3).getCellFormula();
+//
+//                    Row dataRow = sheet.createRow(sheet.getLastRowNum());
+//
+//                    Cell cell1 = dataRow.createCell(startColIndex);
+//                    cell1.setCellValue(artist.getId());
+//                    cell1.setCellStyle(getCellStyle(sheet, startColIndex++, startRowIndex));
+//
+//                    Cell cell2 = dataRow.createCell(startColIndex);
+//                    cell2.setCellValue(artist.getArtistName());
+//                    cell2.setCellStyle(getCellStyle(sheet, startColIndex++, startRowIndex));
+//
+//                    Cell cell3 = dataRow.createCell(startColIndex);
+//                    cell3.setCellValue(artist.getDateOfBirth());
+//                    cell3.setCellStyle(getCellStyle(sheet, startColIndex++, startRowIndex));
+//
+//                    Cell cell4 = dataRow.createCell(startColIndex);
+//                    //  String newFormula = copyFormula(sheet, formula, 0, i+1);
+//                    cell4.setCellValue(formula);
+//                    cell4.setCellStyle(getCellStyle(sheet, startColIndex, startRowIndex));
+//                }
+//            }
+//
+//            try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
+//                workbook.write(outputStream);
+//            }
+//            System.out.println("Data exported");
+//
+//        } catch (Exception e) {
+//            System.out.println("Error exporting data: " + e.getMessage());
+//        }
+//
+//    }
 
     public void export(String filePath, String tableName, DataFrame dataFrame) {
 
@@ -110,13 +111,11 @@ public class ExcelExporter {
 //                int currentColIndex = startColIndex;
 //                int currentRowIndex = startRowIndex;
 
-                Index columnsIndex = dataFrame.getColumnsIndex();
-                String[] labels = columnsIndex.getLabels();
+
 
 
                 List<RowProxy> rowProxies = new ArrayList<>();
                 dataFrame.iterator().forEachRemaining(rowProxies::add);
-
 
 
 //                String table1 = Printers.tabular.toString(dataFrame);
@@ -129,25 +128,21 @@ public class ExcelExporter {
 //
 //                }
                 List<XSSFTableColumn> columns = table.getColumns();
-//
-//                    String name = column.getName();
-//                    System.out.println(name);
-//                }
 
 
+                List<String> frameColumnsNames = Arrays.asList(dataFrame.getColumnsIndex().getLabels());
 
+                for (int i = 0; i < rowProxies.size(); i++) {
                     Row dataRow = sheet.createRow(sheet.getLastRowNum() + 1);
-                    for (int i = 0; i < rowProxies.size(); i++) {
-                        for (XSSFTableColumn tableColumn : columns) {
-//                            Object o = rowProxy.get(label);
-//                            int columnIndex = table.findColumnIndex(label);
-                            Series<Object> column = dataFrame.getColumn(i);
-
+                    for (XSSFTableColumn tableColumn : columns) {
+                        if (frameColumnsNames.contains(tableColumn.getName())){
+                            Series<Object> frameColumn = dataFrame.getColumn(tableColumn.getName());
                             Cell cell = dataRow.createCell(table.getStartColIndex() + tableColumn.getColumnIndex());
-                            cell.setCellValue(column.get(1).toString());
-
-                            String ss = "s";
+                            cell.setCellValue(frameColumn.get(i).toString());
+                        }else{
+                            //TODO action in case the is no column in dataFrame
                         }
+                    }
                 }
 
                 //   }
@@ -191,52 +186,6 @@ public class ExcelExporter {
     private XSSFCellStyle getCellStyle(XSSFSheet sheet, int startColIndex, int startRowIndex) {
         return sheet.getRow(startRowIndex + 1).getCell(startColIndex).getCellStyle();
     }
-/*
-
-    public XSSFWorkbook export1(FileInputStream stream, String sheetName, String tableName, List<Artist> artists) {
-        try {
-            XSSFWorkbook workbook = new XSSFWorkbook(stream);
-            XSSFSheet sheet = workbook.getSheet(sheetName);
-
-            XSSFTable table = sheet.getTables()
-                    .stream()
-                    .filter(t -> t.getName().equals(tableName))
-                    .findFirst()
-                    .orElse(null);
-
-            if (table != null) {
-                for (Artist artist : artists) {
-                    int startColIndex = table.getStartColIndex();
-                    int startRowIndex = table.getStartRowIndex();
-
-
-
-                    XSSFCellStyle cellStyle1 = sheet.getRow(startRowIndex+2).getCell(startColIndex).getCellStyle();
-                    XSSFCellStyle cellStyle2 = sheet.getRow(startRowIndex+2).getCell(startColIndex + 1).getCellStyle();
-                    XSSFCellStyle cellStyle3 = sheet.getRow(startRowIndex+2).getCell(startColIndex + 2).getCellStyle();
-
-                    Row dataRow = sheet.createRow(sheet.getLastRowNum() + 1);
-                    Cell cell1 = dataRow.createCell(startColIndex++);
-                    cell1.setCellValue(artist.getId());
-                    cell1.setCellStyle(cellStyle1);
-
-
-                    Cell cell2 = dataRow.createCell(startColIndex++);
-                    cell2.setCellValue(artist.getArtistName());
-                    cell2.setCellStyle(cellStyle2);
-
-
-                    Cell cell3 = dataRow.createCell(startColIndex);
-                    cell3.setCellValue(artist.getDateOfBirth());
-                    cell3.setCellStyle(cellStyle3);
-                }
-            }
-            return workbook;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-*/
 
     private static String copyFormula(XSSFSheet sheet, String formula, int colDiff, int rowDiff) {
 
