@@ -70,7 +70,7 @@ public class ExcelExporter {
                 Map<String, XSSFCellStyle> columnStylesMap = getCellStyleMap(sheet, columns, startColIndex, startRowIndex);
 
 
-                table.setDataRowCount(rowProxies.size());
+                table.setDataRowCount(rowProxies.size()+1);
 
                 List<String> frameColumnsNames = getFrameColumnsNames(dataFrame);
 
@@ -89,7 +89,7 @@ public class ExcelExporter {
               //  sheet.shiftRows(startRowIndex , lastRowNum, -1);
             }
 
-         //   removeRow(sheet, 6 + 1);
+          //  removeRow(sheet, 1);
 
             try (FileOutputStream outputStream = new FileOutputStream(filePath)) {
                 workbook.write(outputStream);
@@ -101,12 +101,7 @@ public class ExcelExporter {
         }
     }
 
-    /**
-     * Remove a row by its index
-     *
-     * @param sheet    a Excel sheet
-     * @param rowIndex a 0 based index of removing row
-     */
+
     public void removeRow(XSSFSheet sheet, int rowIndex) {
         int lastRowNum = sheet.getLastRowNum();
         if (rowIndex >= 0 && rowIndex < lastRowNum) {
@@ -120,6 +115,11 @@ public class ExcelExporter {
         }
     }
 
+    private void processMappedColumn(DataFrame dataFrame, int i, XSSFTableColumn tableColumn, Cell cell) {
+        Series<Object> frameColumnValues = dataFrame.getColumn(tableColumn.getName());
+        cell.setCellValue(frameColumnValues.get(i).toString());
+    }
+
     private void processUnmappedColumn(XSSFSheet sheet, int startColIndex, int startRowIndex, XSSFTableColumn tableColumn, Cell cell) {
         XSSFCell formulaCandidateCell = sheet.getRow(startRowIndex + 1).getCell(startColIndex + tableColumn.getColumnIndex());
         if (formulaCandidateCell.getCellType().equals(CellType.FORMULA)) {
@@ -129,10 +129,6 @@ public class ExcelExporter {
         }
     }
 
-    private void processMappedColumn(DataFrame dataFrame, int i, XSSFTableColumn tableColumn, Cell cell) {
-        Series<Object> frameColumnValues = dataFrame.getColumn(tableColumn.getName());
-        cell.setCellValue(frameColumnValues.get(i).toString());
-    }
 
     private List<String> getFrameColumnsNames(DataFrame dataFrame) {
         return Arrays.asList(dataFrame.getColumnsIndex().getLabels());
